@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plate Quest</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00e676">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Plate Quest">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&family=Inter:wght@400;600&display=swap">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="fireworks-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999;"></canvas>
+<div class="sky-background">
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="cloud cloud-3"></div>
+</div>
+    <div id="app">
+        <h1>Plate Quest</h1>
+        
+        <div id="menu-screen">
+            <div id="active-games-list"></div>
+            <button id="start-btn" onclick="startGame()">Start New Game</button>
+            <button id="stats-btn" onclick="showStats()">&#127942; View Stats</button>
+            <div id="history-container">
+                <h3>Past Games</h3>
+                <ul id="history-list"></ul>
+                <button id="clear-btn" onclick="clearHistory()" class="hidden">Clear All History</button>
+            </div>
+            <div class="theme-picker">
+                <span class="theme-picker-label">Theme</span>
+                <div class="theme-swatches">
+                    <button class="theme-swatch" data-theme="green"  style="background:#00e676" title="Green"  onclick="applyTheme('green')"></button>
+                    <button class="theme-swatch" data-theme="blue"   style="background:#448aff" title="Blue"   onclick="applyTheme('blue')"></button>
+                    <button class="theme-swatch" data-theme="pink"   style="background:#f06292" title="Pink"   onclick="applyTheme('pink')"></button>
+                    <button class="theme-swatch" data-theme="yellow" style="background:#ffee58" title="Yellow" onclick="applyTheme('yellow')"></button>
+                    <button class="theme-swatch" data-theme="red"    style="background:#ff5252" title="Red"    onclick="applyTheme('red')"></button>
+                    <button class="theme-swatch" data-theme="purple" style="background:#b388ff" title="Purple" onclick="applyTheme('purple')"></button>
+                </div>
+            </div>
+            <div class="menu-footer">
+                Made with ❤️ in NYC &mdash; <a href="https://ko-fi.com/ryne" target="_blank" rel="noopener">Donate</a>
+            </div>
+        </div>
+
+        <div id="stats-screen" class="hidden">
+            <button id="stats-back-btn" onclick="showMenu()">&#8592; Main Menu</button>
+            <div id="stats-content"></div>
+        </div>
+
+        <div id="game-screen" class="hidden">
+            <button id="back-btn" onclick="goToMenu()">&#8592; Main Menu</button>
+            <div class="run-name-row">
+                <div id="run-name-display" class="run-name-display"></div>
+                <button id="rename-btn" onclick="renameRun()" title="Rename this run">&#9998;</button>
+            </div>
+            <div id="time-limit-banner" class="time-limit-banner hidden"></div>
+            <div class="stats">
+                <div id="start-date-display">Start: --</div>
+                <div id="active-days">Active: 0 Days</div>
+                <div id="avg-time">Avg: --</div>
+                <div id="counter">0 / 51</div>
+            </div>
+
+	    <div class="progress-container">
+                <div id="progress-bar"></div>
+		<span id="progress-text">0%</span>
+            </div>
+            <div class="recent-finds-container">
+             <div class="recent-label">RECENT FINDS:</div>
+             <div id="recent-list" class="recent-list">
+              <span class="empty-recent">None yet...</span>
+             </div>
+            </div>
+
+            <div id="plate-grid"></div>
+            <button id="complete-btn" class="complete-btn hidden" onclick="completeGame()">Complete Quest!</button>
+            <button id="abandon-btn" onclick="abandonGame()">Abandon Game</button>
+        </div>
+    </div>
+
+    <div id="custom-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h2 id="modal-title">Confirm</h2>
+            <p id="modal-message">Are you sure?</p>
+            <input id="modal-input" type="text" class="modal-input hidden" placeholder="e.g. Summer Road Trip 2026" maxlength="50" />
+            <label id="modal-checkbox-wrap" class="modal-checkbox-wrap hidden">
+                <input type="checkbox" id="modal-checkbox" />
+                <span>Skip Alaska &amp; Hawaii</span>
+            </label>
+            <div id="modal-time-wrap" class="modal-time-wrap hidden">
+                <div class="modal-time-label">Time Limit</div>
+                <div class="modal-time-options">
+                    <button type="button" class="time-opt active" data-value="0">None</button>
+                    <button type="button" class="time-opt" data-value="86400000">24h</button>
+                    <button type="button" class="time-opt" data-value="259200000">72h</button>
+                    <button type="button" class="time-opt" data-value="604800000">168h</button>
+                </div>
+                <div class="modal-time-custom">
+                    <input type="number" id="modal-custom-hours" class="modal-custom-hours" placeholder="Custom hours (1–500)" min="1" max="500" />
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="modal-cancel" class="modal-btn-secondary">Cancel</button>
+                <button id="modal-confirm" class="modal-btn-primary">Yes, Proceed</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js');
+        });
+      }
+    </script>
+</body>
+</html>
